@@ -27,6 +27,9 @@ interface MulterRequest extends Request {
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Ensure uploads directory exists
+  await fs.mkdir("uploads").catch(() => {});
+
   app.post("/api/videos", upload.single("video"), async (req: MulterRequest, res) => {
     try {
       if (!req.file) {

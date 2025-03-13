@@ -4,7 +4,6 @@ import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { Upload } from "lucide-react";
 import { useMutation } from '@tanstack/react-query';
-import { apiRequest } from '@/lib/queryClient';
 
 export function VideoUpload({ onUploadComplete }) {
   const { toast } = useToast();
@@ -16,7 +15,17 @@ export function VideoUpload({ onUploadComplete }) {
       const formData = new FormData();
       formData.append('video', file);
 
-      const res = await apiRequest('POST', '/api/videos', formData);
+      const res = await fetch('/api/videos', {
+        method: 'POST',
+        body: formData,
+        credentials: 'include'
+      });
+
+      if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.message);
+      }
+
       return res.json();
     },
     onSuccess: (data) => {
