@@ -11,6 +11,10 @@ export default function Home() {
   const { data: videoData, isLoading } = useQuery({
     queryKey: ['/api/videos', currentVideoId],
     enabled: !!currentVideoId,
+    refetchInterval: (data) => {
+      // Poll more frequently while processing
+      return data?.status === 'processing' ? 1000 : false;
+    },
     queryFn: () => fetch(`/api/videos/${currentVideoId}`, {
       credentials: 'include'
     }).then(res => {

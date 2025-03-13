@@ -15,24 +15,35 @@ export function VideoUpload({ onUploadComplete }) {
       const formData = new FormData();
       formData.append('video', file);
 
-      const res = await fetch('/api/videos', {
-        method: 'POST',
-        body: formData,
-        credentials: 'include'
+      const xhr = new XMLHttpRequest();
+      return new Promise((resolve, reject) => {
+        xhr.upload.onprogress = (event) => {
+          if (event.lengthComputable) {
+            const percentComplete = (event.loaded / event.total) * 100;
+            setProgress(percentComplete);
+          }
+        };
+
+        xhr.onload = () => {
+          if (xhr.status === 200) {
+            resolve(JSON.parse(xhr.responseText));
+          } else {
+            reject(new Error(xhr.responseText));
+          }
+        };
+
+        xhr.onerror = () => reject(new Error('Upload failed'));
+
+        xhr.open('POST', '/api/videos');
+        xhr.send(formData);
       });
-
-      if (!res.ok) {
-        const error = await res.json();
-        throw new Error(error.message);
-      }
-
-      return res.json();
     },
     onSuccess: (data) => {
       toast({
         title: "Upload successful",
         description: "Your video is now being processed"
       });
+      setProgress(0);
       onUploadComplete(data.id);
     },
     onError: (error) => {
@@ -41,6 +52,7 @@ export function VideoUpload({ onUploadComplete }) {
         description: error.message,
         variant: "destructive"
       });
+      setProgress(0);
     }
   });
 
