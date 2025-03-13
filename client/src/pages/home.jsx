@@ -10,7 +10,13 @@ export default function Home() {
 
   const { data: videoData, isLoading } = useQuery({
     queryKey: ['/api/videos', currentVideoId],
-    enabled: !!currentVideoId
+    enabled: !!currentVideoId,
+    queryFn: () => fetch(`/api/videos/${currentVideoId}`, {
+      credentials: 'include'
+    }).then(res => {
+      if (!res.ok) throw new Error('Failed to fetch video data');
+      return res.json();
+    })
   });
 
   return (
