@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
@@ -9,6 +9,7 @@ import { apiRequest } from '@/lib/queryClient';
 export function VideoUpload({ onUploadComplete }) {
   const { toast } = useToast();
   const [progress, setProgress] = useState(0);
+  const fileInputRef = useRef(null);
 
   const uploadMutation = useMutation({
     mutationFn: async (file) => {
@@ -34,12 +35,12 @@ export function VideoUpload({ onUploadComplete }) {
     }
   });
 
-  const onDrop = async (e) => {
+  const handleFileSelect = async (e) => {
     e.preventDefault();
     const file = e.dataTransfer?.files[0] || e.target.files[0];
-    
+
     if (!file) return;
-    
+
     if (!file.type.startsWith('video/')) {
       toast({
         title: "Invalid file type",
@@ -52,6 +53,10 @@ export function VideoUpload({ onUploadComplete }) {
     uploadMutation.mutate(file);
   };
 
+  const openFileDialog = () => {
+    fileInputRef.current?.click();
+  };
+
   return (
     <div className="space-y-4">
       <div
@@ -62,14 +67,16 @@ export function VideoUpload({ onUploadComplete }) {
           flex flex-col items-center justify-center space-y-4
           cursor-pointer
         `}
-        onDrop={onDrop}
+        onClick={openFileDialog}
+        onDrop={handleFileSelect}
         onDragOver={(e) => e.preventDefault()}
       >
         <input
+          ref={fileInputRef}
           type="file"
           className="hidden"
           accept="video/*"
-          onChange={onDrop}
+          onChange={handleFileSelect}
           id="video-upload"
         />
         <Upload className="h-8 w-8 text-muted-foreground" />
